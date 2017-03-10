@@ -2,20 +2,15 @@ package prog
 
 import (
 	"github.com/dist-ribut-us/crypto"
+	"github.com/dist-ribut-us/errors"
 	"github.com/dist-ribut-us/ipc"
+	"github.com/dist-ribut-us/log"
 	"github.com/dist-ribut-us/rnet"
 	"os"
 	"strconv"
 )
 
-// this allows errors to be defined as const instead of var
-type defineErr string
-
-func (d defineErr) Error() string {
-	return string(d)
-}
-
-const ErrBadArgs = defineErr("Bad command line args")
+const ErrBadArgs = errors.String("Bad command line args")
 
 // ReadArgs expects to be invoked with an ipcPort, the pool port and the key
 // that should be used to access the merkle tree.
@@ -25,6 +20,7 @@ func ReadArgs() (proc *ipc.Proc, pool *rnet.Addr, key *crypto.Shared, err error)
 		err = ErrBadArgs
 		return
 	}
+	log.Info(log.Lbl("ReadArgs: "), args[1], args[2], args[3])
 	ipcPort, err := strconv.Atoi(args[1])
 	if err != nil {
 		return
@@ -38,6 +34,6 @@ func ReadArgs() (proc *ipc.Proc, pool *rnet.Addr, key *crypto.Shared, err error)
 	if err != nil {
 		return
 	}
-	proc, err = ipc.New(ipcPort)
+	proc, err = ipc.New(rnet.Port(ipcPort))
 	return
 }
