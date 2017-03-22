@@ -1,12 +1,15 @@
 package prog
 
 import (
+	"bufio"
+	"fmt"
 	"github.com/dist-ribut-us/crypto"
 	"github.com/dist-ribut-us/errors"
 	"github.com/dist-ribut-us/ipc"
 	"github.com/dist-ribut-us/log"
 	"github.com/dist-ribut-us/rnet"
 	"os"
+	"regexp"
 	"runtime"
 	"strconv"
 )
@@ -64,4 +67,37 @@ func UserHomeDir() string {
 		return home + "\\"
 	}
 	return os.Getenv("HOME") + "/"
+}
+
+var stdinReader *bufio.Reader
+
+// ReadStdin and split it up into a slice of strings, splitting at either white
+// space or quotes
+func ReadStdin(prompt string) []string {
+	if stdinReader == nil {
+		stdinReader = bufio.NewReader(os.Stdin)
+	}
+	fmt.Print(prompt)
+	text, err := stdinReader.ReadString('\n')
+	if log.Error(err) {
+		return nil
+	}
+	return split(text)
+}
+
+var splitter = regexp.MustCompile(`([^\s"']+)|"([^"]*)"|'([^']*)'`)
+
+func split(b string) []string {
+	m := splitter.FindAllStringSubmatch(b, -1)
+	ret := make([]string, len(m))
+	for i, w := range m {
+		if w[1] != "" {
+			ret[i] = w[1]
+		} else if w[2] != "" {
+			ret[i] = w[2]
+		} else if w[3] != "" {
+			ret[i] = w[3]
+		}
+	}
+	return ret
 }
