@@ -29,11 +29,11 @@ const ErrBadArgs = errors.String("Bad command line args")
 
 // ReadArgs expects to be invoked with an ipcPort, the pool port and the key
 // that should be used to access the merkle tree.
-func ReadArgs() (*ipc.Proc, rnet.Port, *crypto.Shared, error) {
+func ReadArgs() (*ipc.Proc, rnet.Port, *crypto.Symmetric, error) {
 	return readArgs(os.Args)
 }
 
-func readArgs(args []string) (proc *ipc.Proc, pool rnet.Port, key *crypto.Shared, err error) {
+func readArgs(args []string) (proc *ipc.Proc, pool rnet.Port, key *crypto.Symmetric, err error) {
 	if len(args) < 4 {
 		err = ErrBadArgs
 		return
@@ -44,7 +44,7 @@ func readArgs(args []string) (proc *ipc.Proc, pool rnet.Port, key *crypto.Shared
 		return
 	}
 
-	key, err = crypto.SharedFromString(args[3])
+	key, err = crypto.SymmetricFromString(args[3])
 	if err != nil {
 		return
 	}
