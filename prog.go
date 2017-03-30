@@ -9,7 +9,6 @@ import (
 	"github.com/dist-ribut-us/log"
 	"github.com/dist-ribut-us/rnet"
 	"os"
-	"regexp"
 	"runtime"
 	"strconv"
 )
@@ -82,22 +81,38 @@ func ReadStdin(prompt string) []string {
 	if log.Error(err) {
 		return nil
 	}
-	return split(text)
+	return Split(text)
 }
 
-var splitter = regexp.MustCompile(`([^\s"']+)|"([^"]*)"|'([^']*)'`)
-
-func split(b string) []string {
-	m := splitter.FindAllStringSubmatch(b, -1)
-	ret := make([]string, len(m))
-	for i, w := range m {
-		if w[1] != "" {
-			ret[i] = w[1]
-		} else if w[2] != "" {
-			ret[i] = w[2]
-		} else if w[3] != "" {
-			ret[i] = w[3]
+// Split a string by white space or by text surrounded by quotes. Any character
+// preceded by a backspace will be rendered directly.
+func Split(str string) []string {
+	var strs []string
+	var s []rune
+	rs := []rune(str)
+	ln := len(rs) - 1
+	d1, d2, q1, q2 := ' ', '\t', '\'', '"'
+	for i := 0; i <= ln; i++ {
+		flush := i == ln
+		switch r := rs[i]; r {
+		case q1, q2:
+			d1, d2, q1, q2 = r, 0, 0, 0
+			flush = true
+		case d1, d2:
+			d1, d2, q1, q2 = ' ', '\t', '\'', '"'
+			flush = true
+		case '\\':
+			if i < ln {
+				s = append(s, rs[i+1])
+			}
+			i++
+		default:
+			s = append(s, r)
+		}
+		if flush && len(s) > 0 {
+			strs = append(strs, string(s))
+			s = s[0:0]
 		}
 	}
-	return ret
+	return strs
 }

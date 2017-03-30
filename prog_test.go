@@ -18,3 +18,27 @@ func TestReadArgs(t *testing.T) {
 	assert.Equal(t, 3000, int(pool))
 	assert.Equal(t, args[3], key.String())
 }
+
+func TestSplit(t *testing.T) {
+	cases := []struct {
+		in  string
+		out []string
+	}{
+		{
+			"this is a test",
+			[]string{"this", "is", "a", "test"},
+		},
+		{
+			"'test'",
+			[]string{"test"},
+		},
+		{
+			"'test\\'\"'",
+			[]string{"test'\""},
+		},
+	}
+
+	for _, c := range cases {
+		assert.Equal(t, Split(c.in), c.out)
+	}
+}
